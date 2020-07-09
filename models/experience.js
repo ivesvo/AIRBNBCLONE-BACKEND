@@ -63,6 +63,13 @@ const expSchema = new mongoose.Schema({
     language:{
         type: String,
     },
+    hostname:{
+        type: String,
+        required: true,
+    },
+    hostpictureURL:{
+        type: String,
+    },
     country:{
         type: String,
        

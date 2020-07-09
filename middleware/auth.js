@@ -3,11 +3,15 @@ const jwt = require('jsonwebtoken')
 
 exports.loginRequired = async (req, res, next) => {
     try {
-        const token = req.body.token
-        if (!token) {
+        
+        
+        if (!req.headers.authorization) {
             return res.status(400).json({ status: "Fail", message: "Token is required" })
         }
+        const token = req.headers.authorization.replace("Bearer ", "");
         const decoded = jwt.verify(token, process.env.SECRET);
+        
+        
         const user = await User.findOne({ tokens: token, _id: decoded._id })
         if (!user) throw new Error("Unauthorised")
         req.user = user

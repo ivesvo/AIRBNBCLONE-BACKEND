@@ -1,5 +1,6 @@
 var express = require('express');
 const { createTag, getTagList, updateTag, deleteTag } = require('../controllers/tagController');
+const {findExpsbyTags} = require('../controllers/experienceController')
 var router = express.Router();
 const { loginRequired, hostRequired } = require('../middleware/auth')
 
@@ -14,6 +15,7 @@ router.route('/')
     .get(getTagList)
 
 router.route('/:tid')
+    .get(findExpsbyTags)
     .patch(loginRequired, hostRequired, updateTag)
     .delete(loginRequired, hostRequired, deleteTag)
 

@@ -17,7 +17,9 @@ const PAGE_SIZE = 8
             const minPrice = req.query.minPrice || 1;
             const maxPrice = req.query.maxPrice || 1000
             const numToSkip = (parseInt(pageNum)-1)*PAGE_SIZE
-            const expList = await Exp.find({}).sort({createdAt:-1}).limit(PAGE_SIZE).skip(numToSkip);
+            const expList = await Exp.find({
+                price:{$gte: minPrice, $lte:maxPrice}
+            }).sort({createdAt:-1}).limit(PAGE_SIZE).skip(numToSkip);
             const numDocuments = await Exp.countDocuments();
             res.status(200).json({
                 status: "Success",
@@ -37,12 +39,14 @@ const PAGE_SIZE = 8
     exports.createExp = catchAsync (async (req, res, next) => {
        
             const user = req.user
-            const { title, description, tags, price } = req.body
+            const { title, description, tags, price, hostname} = req.body
             if (!title || !description || !tags) {
                 next(new AppError, 401, "please provide all the data required to create an experience")
                
-            };
-            const newArr = await Tag.convertToObject(tags)
+            };  
+            //EATING,playiung ==> ["eating","playing"]
+            let myTags= tags.split(",")
+            let newArr = await Tag.convertToObject(myTags)
             //tag rightnow is an array of string
             // --> convert to an arrat of objectIDs
             // ig tag exists in tags collcction, then we will use the associate id as objecID
@@ -53,6 +57,7 @@ const PAGE_SIZE = 8
                     title: title,
                     description: description,
                     price: price,
+                    hostname: hostname,
                     // groupsize,
                     // duration,
                     // images,
@@ -99,13 +104,11 @@ const PAGE_SIZE = 8
 
 exports.deleteExp = async (req, res) => {
     try {
-        
         const exp = await Exp.findByIdAndDelete(req.params.eid)
         res.status(200).json({
             status: "Successfully Deleting Your Experience",
             data: exp
         })
-
     } catch (err) {
         console.log(err)
         res.status(500).json({ status: "error", error: err.message })
@@ -117,7 +120,6 @@ exports.deleteExp = async (req, res) => {
 
 exports.getExperienceId = async (req,res)=>{
     const id = req.params.eid
-   
     const exp = await Exp.findById(id)
     console.log(exp)
     res.status(200).json({
@@ -125,3 +127,25 @@ exports.getExperienceId = async (req,res)=>{
         data: exp
     })
 }
+
+exports.findExpsbyTags = async (req,res)=>{
+    // console.log("AGFJDKFKKF")
+    const id = req.params.tid
+    const exp = await Exp.find({ tags: { $in: id } })
+  
+    res.status(200).json({
+        status: "Successful",
+        data: exp
+    })
+}
+
+exports.getOldExps = async (req, res) => {
+    console.log("ditme")
+  const id = req.params.id;
+  const oldExps = await Exp.findById(id);
+  console.log("old", oldExps);
+  res.status(200).json({
+    data: oldExps,
+    status: "success",
+  });
+};
